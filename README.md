@@ -24,7 +24,7 @@ renderer-agnostic format and zips it into an asset pack you upload in Home Assis
 
    **Python** (3.11+; GDRE Tools is downloaded once, checksum-verified, into `~/.cache/tesla-view-extractor/`):
    ```bash
-   pip install tesla-view-extractor          # or: pipx install tesla-view-extractor
+   pipx install git+https://github.com/koenhendriks/tesla-view-extractor   # or: pip install git+https://…
    tesla-view-extract Tesla_4.60.0.apks       # interactive: lists the vehicles and asks which one(s)
    ```
 
