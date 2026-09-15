@@ -1,0 +1,7 @@
+id: bayberry
+name: "Model Y (2025+) Premium / Performance"
+codename: Bayberry
+scene: Ego/Bayberry/Bayberry.tscn
+aliases: [juniper]            # id used by Tesla View card configs before packs existed
+wheel_family: Ego/Wheels_Bayberry
+default_wheel: Crossflow19

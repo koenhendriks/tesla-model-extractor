@@ -1,0 +1,6 @@
+id: semi
+name: "Semi"
+codename: Semi
+scene: Ego/Semi/Semi.tscn
+wheel_family: Ego/Wheels_Semi
+default_wheel: SemiDefault

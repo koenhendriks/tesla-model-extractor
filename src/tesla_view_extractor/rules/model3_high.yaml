@@ -1,0 +1,6 @@
+id: model3_high
+name: "Model 3 (2017–2023)"
+codename: 3_High
+scene: Ego/3_High/Model3_High.tscn
+wheel_family: Ego/Wheels
+default_wheel: Pinwheel

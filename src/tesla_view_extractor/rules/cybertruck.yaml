@@ -1,0 +1,6 @@
+id: cybertruck
+name: "Cybertruck"
+codename: Cybertruck
+scene: Ego/Cybertruck/Cybertruck.tscn
+wheel_family: Ego/Cybertruck/Wheels
+default_wheel: CybertruckPremium

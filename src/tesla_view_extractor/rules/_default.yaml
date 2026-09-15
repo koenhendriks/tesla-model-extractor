@@ -1,0 +1,104 @@
+# Default rules applied to every vehicle scene. A <codename>.yaml next to this file is deep-merged on top.
+#
+# Vocabulary: "bindings" are the exported NodePath properties on the scene root (Vehicle.gd: drl_path, lf_door_path,
+# … plus per-model scripts). Rules refer to bindings by name; the extractor resolves them to the leaf node name that
+# exists in this particular scene and silently drops bindings the scene does not have. `*_nodes` entries are literal
+# node names for things that have no binding.
+
+lights:                       # channel → node groups the card toggles (on = visible while the light is on)
+  drl:
+    on: [drl_path, drl_left_path, drl_right_path, headlight_beam_path]
+  headlights:
+    on: [headlights_path, highbeam_left_path, highbeam_right_path, drl_path, drl_left_path, drl_right_path,
+         headlight_beam_path, park_light_rear_path, park_light_rear_projection_path, headlights_projection_path]
+  parking:
+    on: [drl_path, headlight_beam_path, park_light_rear_path, park_light_rear_projection_path]
+  brake:
+    on: [brake_lights_center_path, brake_lights_l_path, brake_lights_r_path, taillights_projection_path]
+    off_nodes: [Brake_Lights_Off, Brake_Lights_CHMSL_Off]
+  turn_l:
+    on: [turn_signal_l_path, turn_signal_rear_l_path]
+  turn_r:
+    on: [turn_signal_r_path, turn_signal_rear_r_path]
+  reverse:
+    on: [reverse_lights_path]
+  fog:
+    on: [fog_lights_path]
+
+lights_eu:                    # overrides applied when the pack is rendered with an EU plate; only emitted when the
+  turn_l:                     # scene has *_global_path bindings (EU rear lights differ from US ones)
+    on: [turn_signal_l_global_path, turn_signal_rear_l_global_path]
+  turn_r:
+    on: [turn_signal_r_global_path, turn_signal_rear_r_global_path]
+  reverse:
+    on: [reverse_lights_global_path]
+
+variants:                     # optional looks; a variant is emitted only when every `requires` binding exists
+  performance:
+    requires: [fascia_perf_path]
+    show: [fascia_perf_path, seats_perf_path, mirror_left_perf_path, mirror_right_perf_path, spoiler_path]
+    hide: [fascia_standard_path, seats_standard_path, mirror_left_standard_path, mirror_right_standard_path]
+  rhd:
+    requires: [interior_rhd_path]
+    show: [interior_rhd_path, doorcard_lf_rhd_path, doorcard_rf_rhd_path]
+    hide: [interior_lhd_path, doorcard_lf_path, doorcard_rf_path]
+  plate_eu:
+    requires: [plate_eu_path]
+    show: [plate_eu_path]
+    hide: [plate_us_path]
+  plate_us:
+    requires: [plate_us_path]
+    show: [plate_us_path]
+    hide: [plate_eu_path]
+  seats_7:
+    requires: [interior_7_seater_path]
+    show: [interior_7_seater_path]
+    hide: [interior_5_seater_path]
+
+defaults:                     # visibility applied right after loading (before variants and light state)
+  hide_bindings: [tesla_badge_path, fascia_perf_path, seats_perf_path, mirror_left_perf_path, mirror_right_perf_path,
+                  spoiler_path, interior_rhd_path, doorcard_lf_rhd_path, doorcard_rf_rhd_path, interior_7_seater_path,
+                  plate_us_path]
+  hide_nodes: [Light_Off]
+  show_bindings: [interior_lhd_path, doorcard_lf_path, doorcard_rf_path, fascia_standard_path, seats_standard_path,
+                  mirror_left_standard_path, mirror_right_standard_path, interior_5_seater_path, plate_eu_path]
+  show_nodes: []
+
+closures:                     # channel → ordered regex list, matched against the AnimationPlayer node name, then the clip name
+  frunk:       ['^HoodAnimation$', '^Hood$', '(?i)^(hood|frunk)']
+  trunk:       ['^TrunkAnimation$', '^Trunk$', '(?i)^(trunk|liftgate)']
+  charge_port: ['^ChargeportAnimation$', '(?i)^charge_?(cap|port)', '(?i)chargeport']
+  door_fl:     ['^LFDoorAnimation$', '^Door_LF$', '^LFDoor$']
+  door_fr:     ['^RFDoorAnimation$', '^Door_RF$', '^RFDoor$']
+  door_rl:     ['^LRDoorAnimation$', '^Door_LR$', '^LRDoor$']
+  door_rr:     ['^RRDoorAnimation$', '^Door_RR$', '^RRDoor$']
+  window_fl:   ['^LFWindowAnimation$', '^Window_LF$', '^LFWindow$']
+  window_fr:   ['^RFWindowAnimation$', '^Window_RF$', '^RFWindow$']
+  window_rl:   ['^LRWindowAnimation$', '^Window_LR$', '^LRWindow$']
+  window_rr:   ['^RRWindowAnimation$', '^Window_RR$', '^RRWindow$']
+
+pivots:                       # bindings, in the order the card expects (LF, RF, RL, RR)
+  wheels: [lf_wheel_path, rf_wheel_path, lr_wheel_path, rr_wheel_path]
+  brakes: [lf_brake_path, rf_brake_path, lr_brake_path, rr_brake_path]
+  charge_port: charge_port_path
+  front: front_marker_path
+  rear: rear_marker_path
+
+markers:                      # hotspot anchors the card uses; values are marker names as found in the scene
+  # Marker.gd nodes carry `marker_name`; root `marker_locators_paths` give locator nodes (Frunk_Marker, Lock_Marker …).
+  # The extractor emits both; these aliases normalise their names to the card's channel ids.
+  aliases:
+    chargePort: charge_port
+    doorFrontL: door_fl
+    doorFrontR: door_fr
+    doorRearL: door_rl
+    doorRearR: door_rr
+    steeringWheel: steering_wheel
+
+brakes:
+  default: standard
+  sets:                       # root property prefix → set name
+    brakes_standard: standard
+    brakes_perf: performance
+
+exclude_paths: ['/Textures/Skins/', '/Skins/']   # seasonal wraps: large and never shown by the card

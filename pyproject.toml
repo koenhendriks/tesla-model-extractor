@@ -1,0 +1,59 @@
+[build-system]
+requires = ["hatchling>=1.25"]
+build-backend = "hatchling.build"
+
+[project]
+name = "tesla-view-extractor"
+version = "0.1.0"
+description = "Turn a Tesla app bundle you own into an asset pack for the Tesla View Home Assistant card"
+readme = "README.md"
+license = "MIT"
+requires-python = ">=3.11"
+authors = [{ name = "Koen Hendriks" }]
+keywords = ["home-assistant", "tesla", "godot", "three.js", "asset-pack"]
+classifiers = [
+  "Programming Language :: Python :: 3",
+  "License :: OSI Approved :: MIT License",
+  "Operating System :: OS Independent",
+  "Topic :: Multimedia :: Graphics :: 3D Modeling",
+]
+dependencies = [
+  "pyyaml>=6.0",
+  "rich>=13.0",
+]
+
+[project.optional-dependencies]
+images = ["Pillow>=10"]
+dev = ["pytest>=8", "ruff>=0.6", "mypy>=1.10", "types-PyYAML"]
+
+[project.scripts]
+tesla-view-extract = "tesla_view_extractor.cli:main"
+
+[project.urls]
+Homepage = "https://github.com/koenhendriks/tesla-view-extractor"
+Issues = "https://github.com/koenhendriks/tesla-view-extractor/issues"
+"Tesla View (Home Assistant integration)" = "https://github.com/koenhendriks/tesla-view"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/tesla_view_extractor"]
+
+[tool.hatch.build.targets.sdist]
+include = ["src", "tests", "docs", "README.md", "LICENSE"]
+
+[tool.ruff]
+line-length = 120
+target-version = "py311"
+src = ["src", "tests"]
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "UP", "B", "SIM"]
+ignore = ["E501"]
+
+[tool.mypy]
+python_version = "3.11"
+strict = false
+ignore_missing_imports = true
+files = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

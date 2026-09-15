@@ -1,0 +1,6 @@
+id: model_x
+name: "Model X (2015–2020)"
+codename: X
+scene: Ego/X/Model_X.tscn
+wheel_family: Ego/Wheels_X_S
+default_wheel: SlipstreamSilver

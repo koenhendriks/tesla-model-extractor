@@ -1,0 +1,6 @@
+id: bayberry_e80
+name: "Model Y L (long wheelbase)"
+codename: BayberryE80
+scene: Ego/BayberryE80/BayberryE80.tscn
+wheel_family: Ego/Wheels_Bayberry
+default_wheel: MachinaV219

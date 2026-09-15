@@ -1,0 +1,23 @@
+# Tesla app bundles and everything derived from them – never commit
+*.apk
+*.apks
+*.xapk
+input/
+recovered/
+packs/
+*.zip
+*.glb
+*.stex
+*.material
+# python
+__pycache__/
+*.pyc
+.venv/
+dist/
+build/
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+# gdre cache when run in-tree
+.gdre/

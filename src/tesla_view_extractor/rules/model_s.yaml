@@ -1,0 +1,6 @@
+id: model_s
+name: "Model S (2012–2020)"
+codename: S
+scene: Ego/S/Model_S.tscn
+wheel_family: Ego/Wheels_X_S
+default_wheel: TempestSilver

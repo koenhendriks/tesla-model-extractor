@@ -1,0 +1,6 @@
+id: x_palladium
+name: "Model X (2021+ Palladium)"
+codename: X_Palladium
+scene: Ego/X_Palladium/X_Palladium.tscn
+wheel_family: Ego/Wheels_Palladium
+default_wheel: Cyberstream

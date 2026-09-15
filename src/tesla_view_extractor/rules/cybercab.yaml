@@ -1,0 +1,5 @@
+id: cybercab
+name: "Cybercab"
+codename: Cybercab
+scene: Ego/Cybercab/Cybercab.tscn
+default_wheel: Cybercab

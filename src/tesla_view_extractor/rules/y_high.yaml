@@ -1,0 +1,6 @@
+id: y_high
+name: "Model Y (2020–2024)"
+codename: Y_High
+scene: Ego/Y_High/ModelY_High.tscn
+wheel_family: Ego/Wheels
+default_wheel: Gemini

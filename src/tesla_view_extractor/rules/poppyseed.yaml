@@ -1,0 +1,6 @@
+id: poppyseed
+name: "Model 3 (2024+ Highland)"
+codename: Poppyseed
+scene: Ego/v2023/Poppyseed/Poppyseed.tscn
+wheel_family: Ego/v2023/Wheels
+default_wheel: Wishbone20

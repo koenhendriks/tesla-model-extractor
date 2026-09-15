@@ -1,0 +1,7 @@
+id: bayberry_e41
+name: "Model Y (2025+) Standard"
+codename: BayberryE41
+scene: Ego/BayberryE41/BayberryE41.tscn
+aliases: [standard]
+wheel_family: Ego/Wheels_Bayberry
+default_wheel: E4118

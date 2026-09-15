@@ -1,0 +1,6 @@
+id: s_palladium
+name: "Model S (2021+ Palladium)"
+codename: S_Palladium
+scene: Ego/S_Palladium/S_Palladium.tscn
+wheel_family: Ego/Wheels_Palladium
+default_wheel: TempestSilver
