@@ -17,7 +17,7 @@ RUN mkdir -p /opt/gdre && cd /opt/gdre \
     && curl -fsSL -o gdre.zip "https://github.com/GDRETools/gdsdecomp/releases/download/v${GDRE_VERSION}/GDRE_tools-v${GDRE_VERSION}-linux.zip" \
     && echo "${GDRE_SHA256}  gdre.zip" | sha256sum -c - \
     && unzip -q gdre.zip && rm gdre.zip && chmod +x /opt/gdre/gdre_tools.x86_64 \
-    && XDG_DATA_HOME=/tmp/xdg /opt/gdre/gdre_tools.x86_64 --headless --version
+    && (XDG_DATA_HOME=/tmp/xdg /opt/gdre/gdre_tools.x86_64 --headless --version 2>&1 | grep -q "Godot RE Tools")
 
 WORKDIR /src
 COPY pyproject.toml README.md LICENSE ./
