@@ -78,6 +78,8 @@ tesla-view-extract validate <pack.zip|dir>                # schema, referenced f
 | `--gdre PATH`, `--no-download` | use your own GDRE Tools binary; never download it |
 | `--rules DIR` | extra `<codename>.yaml` rules (see [docs/rules.md](docs/rules.md)) |
 
+Reproducible builds: set `SOURCE_DATE_EPOCH` to pin `generated_at`; everything else in a pack is deterministic.
+
 Exit codes: 0 ok · 1 error · 2 a selection is required (no TTY) · 3 the produced pack failed validation.
 
 ## How it works

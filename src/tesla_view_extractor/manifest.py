@@ -9,6 +9,7 @@ from __future__ import annotations
 import datetime as dt
 import json
 import logging
+import os
 import re
 from dataclasses import dataclass, field
 from pathlib import Path
@@ -47,6 +48,13 @@ def _json_default(o: Any) -> Any:
 
 def _json_bytes(data: Any) -> bytes:
     return (json.dumps(data, indent=1, ensure_ascii=False, default=_json_default) + "\n").encode("utf-8")
+
+
+def _generated_at() -> str:
+    """UTC timestamp; honours SOURCE_DATE_EPOCH for reproducible packs."""
+    epoch = os.environ.get("SOURCE_DATE_EPOCH")
+    now = dt.datetime.fromtimestamp(int(epoch), dt.UTC) if epoch else dt.datetime.now(dt.UTC)
+    return now.replace(microsecond=0).isoformat().replace("+00:00", "Z")
 
 
 def overrides_path(scene_rel: str) -> str:
@@ -119,7 +127,7 @@ class PackBuilder:
                 "gdre": self.root.gdre.version if self.root.gdre else None,
             },
             "app_version": None,
-            "generated_at": dt.datetime.now(dt.UTC).replace(microsecond=0).isoformat().replace("+00:00", "Z"),
+            "generated_at": _generated_at(),
             "models": {},
             "wheels": {},
             "wheel_aliases": dict(cat.options.wheel_aliases),
