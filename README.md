@@ -16,6 +16,18 @@ project with [GDRE Tools](https://github.com/GDRETools/gdsdecomp) and converts i
 > Tesla-owned material; use it for your own car and projects and do not redistribute it. See [LICENSE](LICENSE) for
 > the trademark note.
 
+![Cybertruck, Model X, Model S, Model Y and Model 3 exported as GLB](docs/images/lineup.webp)
+
+| | |
+|---|---|
+| ![Model Y with frunk, trunk, doors and windows open](docs/images/model-y-open.webp) | ![Model X with falcon-wing doors, front door and frunk open](docs/images/model-x-falcon-doors.webp) |
+| Model Y (2025): frunk, trunk with struts, doors, windows and charge port are separate animation clips | Model X: the falcon-wing doors are two-stage clips, driven like every other closure |
+| ![Model 3 Highland with trunk, rear door and charge port open](docs/images/model-3-trunk-chargeport.webp) | ![Cybertruck with frunk and doors open](docs/images/cybertruck-open.webp) |
+| Model 3 Highland: trunk, rear door and charge port open, front window down | Cybertruck: stainless body from the app's `paint_mix` shader, frunk and doors open |
+
+The images are the exported GLB files rendered with three.js (studio environment, paint brightened for a lit scene);
+every open part is a glTF animation contained in the file, posed at its end frame.
+
 ## Quick start
 
 1. Get the Android bundle of the Tesla app (`Tesla_<version>.apks` / `.apkm` / `.xapk` / `.apk`) from a device you

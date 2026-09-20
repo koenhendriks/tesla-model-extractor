@@ -17,6 +17,10 @@ ROOT = Path(__file__).resolve().parent.parent
 FORBIDDEN_SUFFIXES = {".apk", ".apks", ".xapk", ".pck", ".stex", ".glb", ".gltf", ".material", ".obj", ".mtl", ".png", ".jpg",
                       ".jpeg", ".webp", ".tres", ".tscn", ".gd", ".gdc", ".import", ".scn", ".res"}
 MAX_BYTES = 200 * 1024
+# README screenshots: renders of the exported models made by us, not files taken from the app
+PREVIEW_DIR = "docs/images/"
+PREVIEW_SUFFIXES = {".webp", ".jpg", ".jpeg", ".png"}
+PREVIEW_MAX_BYTES = 600 * 1024
 CODENAME_RE = re.compile(r"\b(Bayberry|Poppyseed|Palladium|Cybercab|Lychee|Tamarind)\b")
 CODENAME_ALLOWED = ("src/tesla_model_extractor/rules/", "docs/", "README.md", "scripts/check_no_assets.py", "tests/", "src/tesla_model_extractor/scrape/", "src/tesla_model_extractor/convert/", "src/tesla_model_extractor/catalog.py", "src/tesla_model_extractor/manifest.py", "src/tesla_model_extractor/legacy.py", "src/tesla_model_extractor/bundle.py", "src/tesla_model_extractor/unreal/")
 
@@ -31,6 +35,10 @@ def main() -> int:
     for p in tracked_files():
         rel = p.relative_to(ROOT).as_posix()
         if not p.exists():
+            continue
+        if rel.startswith(PREVIEW_DIR) and p.suffix.lower() in PREVIEW_SUFFIXES:
+            if p.stat().st_size > PREVIEW_MAX_BYTES:
+                problems.append(f"{rel}: preview image larger than {PREVIEW_MAX_BYTES // 1024} KB")
             continue
         if p.suffix.lower() in FORBIDDEN_SUFFIXES:
             problems.append(f"{rel}: forbidden file type {p.suffix}")
