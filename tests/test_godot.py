@@ -79,3 +79,14 @@ def test_transform_roundtrip():
 def test_mirrored_transform_gets_negative_scale():
     _, _, scale = decompose_transform([-1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0])
     assert scale[0] < 0
+
+
+def test_multiline_node_header_keeps_properties_on_its_own_node():
+    text = (
+        '[gd_scene format=2]\n\n[node name="Door" parent="."]\nmaterial/0 = 1\n\n'
+        '[node name="Door_Handle_Signature" parent="." groups=[\n"signature",\n]]\nvisible = false\n'
+    )
+    nodes = {b.name: b for b in parse_text(text, None).nodes}
+    assert "visible" not in nodes["Door"].props
+    assert nodes["Door_Handle_Signature"].props["visible"] is False
+    assert nodes["Door_Handle_Signature"].attrs["groups"] == ["signature"]

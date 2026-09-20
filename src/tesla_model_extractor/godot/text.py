@@ -16,6 +16,7 @@ from typing import Any
 from .values import ExtRef, GodotValueError, SubRef, _Parser, tokenize
 
 _HEADER = re.compile(r"^\[([A-Za-z_]+)(.*)\]\s*$")
+_HEADER_START = re.compile(r"^\[(gd_scene|gd_resource|ext_resource|sub_resource|node|resource|connection|editable)\b")
 _PROP = re.compile(r"^([A-Za-z_][\w/]*(?:\.[\w/]+)*) = (.*)$")
 
 
@@ -118,8 +119,28 @@ def parse_header_attrs(text: str) -> dict[str, Any]:
     return attrs
 
 
+def _join_headers(lines: list[str]) -> list[str]:
+    """Fold multi-line block headers (`[node name="X" groups=[` / `"signature",` / `]]`) into one line.
+
+    Godot writes node groups over several lines; a header that is not folded is not recognised and the properties
+    that follow it (typically `visible = false`) end up on the previous node."""
+    out: list[str] = []
+    i = 0
+    while i < len(lines):
+        line = lines[i]
+        if _HEADER_START.match(line) and not _balanced(line):
+            buf = line
+            while not _balanced(buf) and i + 1 < len(lines):
+                i += 1
+                buf += " " + lines[i].strip()
+            line = buf
+        out.append(line)
+        i += 1
+    return out
+
+
 def parse_text(text: str, path: Path | None = None) -> GodotFile:
-    lines = text.splitlines()
+    lines = _join_headers(text.splitlines())
     header: Block | None = None
     blocks: list[Block] = []
     ext: dict[int, ExtResource] = {}
