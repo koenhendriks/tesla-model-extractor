@@ -290,7 +290,7 @@ class Assembler:
         self.mats.warnings.clear()
         sidecar = {
             "format": 1,
-            "generated_by": {"tool": "tesla-view-extractor", "version": __version__},
+            "generated_by": {"tool": "tesla-model-extractor", "version": __version__},
             "app_version": self.manifest.get("app_version"),
             "model": model_id,
             "name": model.get("name"),

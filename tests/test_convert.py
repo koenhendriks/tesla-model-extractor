@@ -1,8 +1,8 @@
 from pathlib import Path
 
-from tesla_view_extractor.convert.anim import convert_animation_file, convert_clip
-from tesla_view_extractor.convert.scene import convert_scene
-from tesla_view_extractor.godot.resolve import ResourceRoot
+from tesla_model_extractor.convert.anim import convert_animation_file, convert_clip
+from tesla_model_extractor.convert.scene import convert_scene
+from tesla_model_extractor.godot.resolve import ResourceRoot
 
 
 def test_scene_overrides_and_facts(recovered: Path):
@@ -77,8 +77,8 @@ def test_obj_scene(recovered: Path):
 
 
 def test_anim_old_style_vector_tracks_merge_into_partial_transform_keys():
-    from tesla_view_extractor.convert.anim import convert_clip, quat_from_euler_yxz_deg
-    from tesla_view_extractor.godot.values import parse_value
+    from tesla_model_extractor.convert.anim import convert_clip, quat_from_euler_yxz_deg
+    from tesla_model_extractor.godot.values import parse_value
 
     props = {
         "resource_name": "Hood",

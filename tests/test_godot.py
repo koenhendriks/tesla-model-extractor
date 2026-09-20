@@ -2,9 +2,9 @@ import math
 
 import pytest
 
-from tesla_view_extractor.godot.math import decompose_transform, transform_to_mat4
-from tesla_view_extractor.godot.text import parse_header_attrs, parse_text
-from tesla_view_extractor.godot.values import Call, ExtRef, GodotValueError, Ident, SubRef, parse_value, pool_floats
+from tesla_model_extractor.godot.math import decompose_transform, transform_to_mat4
+from tesla_model_extractor.godot.text import parse_header_attrs, parse_text
+from tesla_model_extractor.godot.values import Call, ExtRef, GodotValueError, Ident, SubRef, parse_value, pool_floats
 
 
 def test_literals():

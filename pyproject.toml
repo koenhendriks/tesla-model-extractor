@@ -3,14 +3,14 @@ requires = ["hatchling>=1.25"]
 build-backend = "hatchling.build"
 
 [project]
-name = "tesla-view-extractor"
-version = "0.2.0"
-description = "Turn a Tesla app bundle you own into an asset pack for the Tesla View Home Assistant card"
+name = "tesla-model-extractor"
+version = "0.3.0"
+description = "Extract the 3D vehicle models, materials and animations from your own copy of the Tesla app: GLB for Unreal / Blender / any glTF importer, or asset packs for the Tesla View Home Assistant card"
 readme = "README.md"
 license = "MIT"
 requires-python = ">=3.11"
 authors = [{ name = "Koen Hendriks" }]
-keywords = ["home-assistant", "tesla", "godot", "three.js", "asset-pack", "gltf", "unreal-engine"]
+keywords = ["tesla", "3d-models", "gltf", "glb", "unreal-engine", "blender", "godot", "asset-extraction", "home-assistant"]
 classifiers = [
   "Programming Language :: Python :: 3",
   "License :: OSI Approved :: MIT License",
@@ -27,15 +27,16 @@ dependencies = [
 dev = ["pytest>=8", "ruff>=0.6", "mypy>=1.10", "types-PyYAML"]
 
 [project.scripts]
-tesla-view-extract = "tesla_view_extractor.cli:main"
+tesla-model-extract = "tesla_model_extractor.cli:main"
+tesla-view-extract = "tesla_model_extractor.cli:main"  # name of the tool before 0.3; kept for existing docs and scripts
 
 [project.urls]
-Homepage = "https://github.com/koenhendriks/tesla-view-extractor"
-Issues = "https://github.com/koenhendriks/tesla-view-extractor/issues"
+Homepage = "https://github.com/koenhendriks/tesla-model-extractor"
+Issues = "https://github.com/koenhendriks/tesla-model-extractor/issues"
 "Tesla View (Home Assistant integration)" = "https://github.com/koenhendriks/tesla-view"
 
 [tool.hatch.build.targets.wheel]
-packages = ["src/tesla_view_extractor"]
+packages = ["src/tesla_model_extractor"]
 
 [tool.hatch.build.targets.sdist]
 include = ["src", "tests", "docs", "README.md", "LICENSE"]

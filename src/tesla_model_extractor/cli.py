@@ -1,4 +1,4 @@
-"""tesla-view-extract – command line interface."""
+"""tesla-model-extract: command line interface."""
 
 from __future__ import annotations
 
@@ -28,8 +28,12 @@ EXIT_OK, EXIT_ERROR, EXIT_SELECT, EXIT_INVALID = 0, 1, 2, 3
 
 def _parser() -> argparse.ArgumentParser:
     p = argparse.ArgumentParser(
-        prog="tesla-view-extract",
-        description="Build Tesla View asset packs from a Tesla app bundle you own (.apks/.apkm/.xapk/.apk) or a GDRE-recovered project directory.",
+        prog="tesla-model-extract",
+        description=(
+            "Extract the Tesla app's 3D vehicle models from a bundle you own (.apks/.apkm/.xapk/.apk) or a "
+            "GDRE-recovered project directory: `unreal` writes self-contained GLB files for Unreal / Blender / any glTF "
+            "importer, `extract` builds asset packs for the Tesla View Home Assistant card."
+        ),
         epilog="Never downloads the Tesla app. Downloads only the pinned, checksum-verified GDRE Tools release when no local copy is found.",
     )
     p.add_argument("--version", action="version", version=f"%(prog)s {__version__} (GDRE Tools {GDRE_VERSION})")
@@ -53,7 +57,7 @@ def _parser() -> argparse.ArgumentParser:
         sp.add_argument("--no-download", action="store_true", help="never download GDRE Tools")
         sp.add_argument("--rules", metavar="DIR", help="extra directory with <codename>.yaml rules files")
 
-    ex = sub.add_parser("extract", help="build asset pack(s) (default command)")
+    ex = sub.add_parser("extract", help="build Tesla View (Home Assistant) asset pack(s) (default command)")
     common(ex)
     ex.add_argument(
         "-o",

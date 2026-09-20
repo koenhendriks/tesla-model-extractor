@@ -1,4 +1,4 @@
-"""Convert a GLB written by `tesla-view-extract unreal` to FBX with Blender.
+"""Convert a GLB written by `tesla-model-extract unreal` to FBX with Blender.
 
     blender --background --python scripts/glb_to_fbx.py -- input.glb output.fbx
 

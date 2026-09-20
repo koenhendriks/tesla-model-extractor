@@ -51,8 +51,10 @@ def host_os() -> str:
 
 
 def cache_dir() -> Path:
-    base = os.environ.get("XDG_CACHE_HOME") or (Path.home() / ".cache")
-    return Path(base) / "tesla-view-extractor" / "gdre"
+    base = Path(os.environ.get("XDG_CACHE_HOME") or (Path.home() / ".cache"))
+    new = base / "tesla-model-extractor" / "gdre"
+    old = base / "tesla-view-extractor" / "gdre"  # cache location before the rename; reuse a download that is there
+    return old if old.exists() and not new.exists() else new
 
 
 @dataclass

@@ -4,12 +4,12 @@ from pathlib import Path
 
 import pytest
 
-from tesla_view_extractor.catalog import build_catalog
-from tesla_view_extractor.cli import main
-from tesla_view_extractor.godot.resolve import ResourceRoot
-from tesla_view_extractor.manifest import PackBuilder
-from tesla_view_extractor.pack import write_zip
-from tesla_view_extractor.validate import validate_pack
+from tesla_model_extractor.catalog import build_catalog
+from tesla_model_extractor.cli import main
+from tesla_model_extractor.godot.resolve import ResourceRoot
+from tesla_model_extractor.manifest import PackBuilder
+from tesla_model_extractor.pack import write_zip
+from tesla_model_extractor.validate import validate_pack
 
 
 def test_catalog(recovered: Path, rules_dir: Path):

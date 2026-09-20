@@ -1,10 +1,10 @@
 from pathlib import Path
 
-from tesla_view_extractor.godot.resolve import ResourceRoot
-from tesla_view_extractor.rules import load_rules, rules_for_scene, slug
-from tesla_view_extractor.scrape.environment import scrape_environment
-from tesla_view_extractor.scrape.options import api_wheel_name, scrape_vehicle_options
-from tesla_view_extractor.scrape.product import scrape_product_table
+from tesla_model_extractor.godot.resolve import ResourceRoot
+from tesla_model_extractor.rules import load_rules, rules_for_scene, slug
+from tesla_model_extractor.scrape.environment import scrape_environment
+from tesla_model_extractor.scrape.options import api_wheel_name, scrape_vehicle_options
+from tesla_model_extractor.scrape.product import scrape_product_table
 
 
 def test_vehicle_options(recovered: Path):

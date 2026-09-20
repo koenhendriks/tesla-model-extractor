@@ -21,7 +21,7 @@ of all installed packs into an `index.json` for the card.
 ```jsonc
 {
   "format": 1,
-  "generated_by": { "tool": "tesla-view-extractor", "version": "0.1.0", "gdre": "2.6.4" },
+  "generated_by": { "tool": "tesla-model-extractor", "version": "0.1.0", "gdre": "2.6.4" },
   "app_version": "4.60.0-4542",          // from the bundle file name, may be null
   "generated_at": "2026-09-15T12:00:00Z",
   "models":   { "<model id>": Model },   // ^[a-z0-9_]+$

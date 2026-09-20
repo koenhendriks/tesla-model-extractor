@@ -1,7 +1,7 @@
 # Rules files
 
 The scene converter finds *what* is in a vehicle scene; the rules say what it *means* for the card. Rules live in
-`src/tesla_view_extractor/rules/`: `_default.yaml` applies to every scene, `<codename>.yaml` is deep-merged on top
+`src/tesla_model_extractor/rules/`: `_default.yaml` applies to every scene, `<codename>.yaml` is deep-merged on top
 for one vehicle. Pass `--rules DIR` to add or override files without changing the package.
 
 ## Bindings are the key
@@ -12,7 +12,7 @@ script): `drl_path`, `headlights_path`, `brake_lights_center_path`, `lf_door_pat
 Rules refer to bindings, never to raw node names, so the same rule works across scenes whose node names differ
 (`DRL` on the Premium, `DRL_Left`/`DRL_Right` on the Standard). Bindings a scene does not have are skipped.
 
-`tesla-view-extract inspect <bundle> <codename>` prints the bindings, animation players / clips, markers and node
+`tesla-model-extract inspect <bundle> <codename>` prints the bindings, animation players / clips, markers and node
 names of a scene – everything you need to write its rules.
 
 ## `_default.yaml` sections

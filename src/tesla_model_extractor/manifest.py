@@ -132,7 +132,7 @@ class PackBuilder:
         manifest: dict[str, Any] = {
             "format": PACK_FORMAT,
             "generated_by": {
-                "tool": "tesla-view-extractor",
+                "tool": "tesla-model-extractor",
                 "version": __version__,
                 "gdre": self.root.gdre.version if self.root.gdre else None,
             },

@@ -18,7 +18,7 @@ FORBIDDEN_SUFFIXES = {".apk", ".apks", ".xapk", ".pck", ".stex", ".glb", ".gltf"
                       ".jpeg", ".webp", ".tres", ".tscn", ".gd", ".gdc", ".import", ".scn", ".res"}
 MAX_BYTES = 200 * 1024
 CODENAME_RE = re.compile(r"\b(Bayberry|Poppyseed|Palladium|Cybercab|Lychee|Tamarind)\b")
-CODENAME_ALLOWED = ("src/tesla_view_extractor/rules/", "docs/", "README.md", "scripts/check_no_assets.py", "tests/", "src/tesla_view_extractor/scrape/", "src/tesla_view_extractor/convert/", "src/tesla_view_extractor/catalog.py", "src/tesla_view_extractor/manifest.py", "src/tesla_view_extractor/legacy.py", "src/tesla_view_extractor/bundle.py")
+CODENAME_ALLOWED = ("src/tesla_model_extractor/rules/", "docs/", "README.md", "scripts/check_no_assets.py", "tests/", "src/tesla_model_extractor/scrape/", "src/tesla_model_extractor/convert/", "src/tesla_model_extractor/catalog.py", "src/tesla_model_extractor/manifest.py", "src/tesla_model_extractor/legacy.py", "src/tesla_model_extractor/bundle.py", "src/tesla_model_extractor/unreal/")
 
 
 def tracked_files() -> list[Path]:

@@ -6,20 +6,20 @@ from pathlib import Path
 from PIL import Image
 
 from conftest import HOOD_ANIM, make_glb
-from tesla_view_extractor.catalog import build_catalog
-from tesla_view_extractor.cli import main
-from tesla_view_extractor.convert.anim import convert_clip
-from tesla_view_extractor.godot.resolve import ResourceRoot
-from tesla_view_extractor.godot.text import parse_text
-from tesla_view_extractor.manifest import PackBuilder
-from tesla_view_extractor.pack import write_zip
-from tesla_view_extractor.unreal.anim import add_animation
-from tesla_view_extractor.unreal.gltf import Document, set_matrix, trs_from_mat4
-from tesla_view_extractor.unreal.materials import MaterialBuilder, Paint
-from tesla_view_extractor.unreal.objmesh import add_obj_mesh, parse_obj
-from tesla_view_extractor.unreal.packsource import load_pack
-from tesla_view_extractor.unreal.scene import Assembler, ExportOptions
-from tesla_view_extractor.unreal.textures import TextureRepacker
+from tesla_model_extractor.catalog import build_catalog
+from tesla_model_extractor.cli import main
+from tesla_model_extractor.convert.anim import convert_clip
+from tesla_model_extractor.godot.resolve import ResourceRoot
+from tesla_model_extractor.godot.text import parse_text
+from tesla_model_extractor.manifest import PackBuilder
+from tesla_model_extractor.pack import write_zip
+from tesla_model_extractor.unreal.anim import add_animation
+from tesla_model_extractor.unreal.gltf import Document, set_matrix, trs_from_mat4
+from tesla_model_extractor.unreal.materials import MaterialBuilder, Paint
+from tesla_model_extractor.unreal.objmesh import add_obj_mesh, parse_obj
+from tesla_model_extractor.unreal.packsource import load_pack
+from tesla_model_extractor.unreal.scene import Assembler, ExportOptions
+from tesla_model_extractor.unreal.textures import TextureRepacker
 
 
 def _png(pixels: list[tuple[int, int, int, int]], size=(2, 1)) -> bytes:

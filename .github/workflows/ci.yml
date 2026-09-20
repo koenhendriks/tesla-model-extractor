@@ -49,6 +49,6 @@ jobs:
         with:
           context: .
           push: false
-          tags: tesla-view-extractor:ci
+          tags: tesla-model-extractor:ci
           cache-from: type=gha
           cache-to: type=gha,mode=max

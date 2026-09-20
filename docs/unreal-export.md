@@ -1,6 +1,6 @@
 # Unreal Engine export
 
-`tesla-view-extract unreal` turns the vehicles of a Tesla app bundle into **self-contained glTF 2.0 binaries** that
+`tesla-model-extract unreal` turns the vehicles of a Tesla app bundle into **self-contained glTF 2.0 binaries** that
 Unreal Engine 5 imports directly (Interchange glTF importer, UE 5.1+). Unlike the Home Assistant asset pack, which
 leaves the interpretation to the card at runtime, these files already contain everything the engine can express:
 
@@ -18,10 +18,10 @@ paint table, environment presets, marker semantics) is written next to the GLB i
 ## Running it
 
 ```bash
-tesla-view-extract unreal Tesla_4.60.5.apkm --all -o unreal/               # every vehicle, default look
-tesla-view-extract unreal Tesla_4.60.5.apkm --models bayberry --paint Quicksilver --variant performance,plate_us
-tesla-view-extract unreal tesla-view-pack-bayberry-4.60.0.zip -o unreal/   # from an existing asset pack
-tesla-view-extract unreal recovered-dir --models model_s --wheels none --brakes none --keep-all
+tesla-model-extract unreal Tesla_4.60.5.apkm --all -o unreal/               # every vehicle, default look
+tesla-model-extract unreal Tesla_4.60.5.apkm --models bayberry --paint Quicksilver --variant performance,plate_us
+tesla-model-extract unreal tesla-view-pack-bayberry-4.60.0.zip -o unreal/   # from an existing asset pack
+tesla-model-extract unreal recovered-dir --models model_s --wheels none --brakes none --keep-all
 ```
 
 | option | meaning |

@@ -1,6 +1,7 @@
-# tesla-view-extractor with GDRE Tools bundled.
-#   docker build -t tesla-view-extractor .
-#   docker run --rm -v "$PWD":/work ghcr.io/koenhendriks/tesla-view-extractor /work/Tesla_4.60.0.apks --models bayberry -o /work/packs
+# tesla-model-extractor with GDRE Tools bundled.
+#   docker run --rm -v "$PWD":/work ghcr.io/koenhendriks/tesla-model-extractor unreal /work/Tesla_4.60.5.apkm --all -o /work/unreal
+#   docker build -t tesla-model-extractor .
+#   docker run --rm -v "$PWD":/work ghcr.io/koenhendriks/tesla-model-extractor /work/Tesla_4.60.0.apks --models bayberry -o /work/packs
 FROM python:3.12-slim AS base
 
 ARG GDRE_VERSION=2.6.4
@@ -29,5 +30,5 @@ ENV GDRE_TOOLS=/opt/gdre/gdre_tools.x86_64 \
     XDG_DATA_HOME=/tmp/xdg \
     PYTHONUNBUFFERED=1
 WORKDIR /work
-ENTRYPOINT ["tesla-view-extract"]
+ENTRYPOINT ["tesla-model-extract"]
 CMD ["--help"]
