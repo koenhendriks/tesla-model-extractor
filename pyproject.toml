@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "tesla-model-extractor"
-version = "0.3.0"
+version = "0.3.1"
 description = "Extract the 3D vehicle models, materials and animations from your own copy of the Tesla app: GLB for Unreal / Blender / any glTF importer, or asset packs for the Tesla View Home Assistant card"
 readme = "README.md"
 license = "MIT"
