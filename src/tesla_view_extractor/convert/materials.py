@@ -4,6 +4,7 @@ The output shape is stable (the card's `card/src/scene/materials.ts` `MaterialDe
   kind: "pbr" | "car_paint" | "tinted_glass" | "chrome_badge" | "beam_glow" | "shader" | "binary_unsupported"
   pbr fields: albedo[3], alpha, albedo_texture, metallic(_texture/_channel), specular, roughness(_texture/_channel),
               ao_texture/_channel/_on_uv2/_light_affect, normal_texture/_scale, emission/_energy/_texture/_on_uv2/_operator,
+              uv1_scale/uv1_offset/uv2_scale/uv2_offset (only when set),
               transparent, unshaded, cull_mode, blend_mode, depth_draw_mode, render_priority
   shader fields: shader (path), params {name: value | texture path | colour}, render_priority
 All paths are project-relative (`res://` stripped).
@@ -18,6 +19,7 @@ from ..godot.values import Call, ExtRef, Ident, SubRef, color
 
 SHADER_KINDS = (
     ("opaque_skybox", "car_paint"),
+    ("paint_mix", "car_paint"),
     ("glass_skybox", "tinted_glass"),
     ("headlights_beam_glow", "beam_glow"),
     ("Powerflow", "power_flow"),
@@ -95,6 +97,10 @@ def normalize_material(
         d["emission_texture"] = _tex(gf, g("emission_texture"))
         d["emission_on_uv2"] = bool(g("emission_on_uv2", False))
         d["emission_operator"] = g("emission_operator", 0)
+    for key in ("uv1_scale", "uv1_offset", "uv2_scale", "uv2_offset"):
+        v = g(key)
+        if isinstance(v, Call) and (f := v.floats()):
+            d[key] = f
     d["transparent"] = bool(g("flags_transparent", False))
     d["unshaded"] = bool(g("flags_unshaded", False))
     d["cull_mode"] = g("params_cull_mode", 0)

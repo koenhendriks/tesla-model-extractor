@@ -16,19 +16,85 @@ TINY_PNG = bytes.fromhex(
 )
 
 
-def make_glb(nodes: list[str], materials: list[str]) -> bytes:
-    """A GLB with the given node names (no geometry) – enough for the header reader."""
+def make_glb(nodes: list[str], materials: list[str], prims: dict[str, int] | None = None) -> bytes:
+    """A GLB with the given node names: every non-root node gets a one-triangle mesh (POSITION / NORMAL / two UV
+    sets / indices) with `prims[name]` primitives (default 1) cycling through the materials, plus one embedded PNG
+    texture on the first material. Small, but structurally what GDRE produces for the app's vehicles."""
+    prims = prims or {}
+    blob = bytearray()
+    buffer_views: list[dict] = []
+    accessors: list[dict] = []
+
+    def view(data: bytes, target: int | None = None) -> int:
+        while len(blob) % 4:
+            blob.append(0)
+        bv = {"buffer": 0, "byteOffset": len(blob), "byteLength": len(data)}
+        if target:
+            bv["target"] = target
+        blob.extend(data)
+        buffer_views.append(bv)
+        return len(buffer_views) - 1
+
+    def accessor(values: list[float], kind: str, component: int, target: int, minmax: bool) -> int:
+        n = {"SCALAR": 1, "VEC2": 2, "VEC3": 3}[kind]
+        fmt = {5126: "f", 5123: "H"}[component]
+        acc = {
+            "bufferView": view(struct.pack(f"<{len(values)}{fmt}", *values), target),
+            "componentType": component,
+            "count": len(values) // n,
+            "type": kind,
+        }
+        if minmax:
+            acc["min"] = [min(values[i::n]) for i in range(n)]
+            acc["max"] = [max(values[i::n]) for i in range(n)]
+        accessors.append(acc)
+        return len(accessors) - 1
+
+    meshes: list[dict] = []
+    out_nodes: list[dict] = [{"name": nodes[0], "children": list(range(1, len(nodes)))}]
+    for i, name in enumerate(nodes[1:]):
+        primitives = []
+        for k in range(prims.get(name, 1)):
+            y = float(k)
+            primitives.append(
+                {
+                    "attributes": {
+                        "POSITION": accessor([0, y, 0, 1, y, 0, 0, y + 1, 0], "VEC3", 5126, 34962, True),
+                        "NORMAL": accessor([0, 0, 1] * 3, "VEC3", 5126, 34962, False),
+                        "TEXCOORD_0": accessor([0, 0, 1, 0, 0, 1], "VEC2", 5126, 34962, False),
+                        "TEXCOORD_1": accessor([0, 0, 1, 0, 0, 1], "VEC2", 5126, 34962, False),
+                    },
+                    "indices": accessor([0, 1, 2], "SCALAR", 5123, 34963, False),
+                    "material": (i + k) % len(materials) if materials else 0,
+                    "mode": 4,
+                }
+            )
+        meshes.append({"name": name, "primitives": primitives})
+        out_nodes.append({"name": name, "mesh": len(meshes) - 1, "translation": [0.0, 0.0, float(i)]})
+    image_view = view(TINY_PNG)
+    mats = [{"name": m, "pbrMetallicRoughness": {"baseColorFactor": [1, 1, 1, 1]}} for m in materials]
+    if mats:
+        mats[0]["pbrMetallicRoughness"]["baseColorTexture"] = {"index": 0}
     doc = {
-        "asset": {"version": "2.0"},
+        "asset": {"version": "2.0", "generator": "test"},
         "scene": 0,
-        "scenes": [{"nodes": [0]}],
-        "nodes": [{"name": nodes[0], "children": list(range(1, len(nodes)))}] + [{"name": n} for n in nodes[1:]],
-        "materials": [{"name": m} for m in materials],
-        "meshes": [],
+        "scenes": [{"name": nodes[0], "nodes": [0]}],
+        "nodes": out_nodes,
+        "materials": mats,
+        "meshes": meshes,
+        "accessors": accessors,
+        "bufferViews": buffer_views,
+        "buffers": [{"byteLength": len(blob)}],
+        "images": [{"bufferView": image_view, "mimeType": "image/png", "name": "tiny"}],
+        "samplers": [{"magFilter": 9729, "minFilter": 9987, "wrapS": 10497, "wrapT": 10497}],
+        "textures": [{"sampler": 0, "source": 0}],
+        "extensionsUsed": ["GODOT_single_root"],
     }
     js = json.dumps(doc).encode()
     js += b" " * ((4 - len(js) % 4) % 4)
-    body = struct.pack("<II", len(js), 0x4E4F534A) + js
+    while len(blob) % 4:
+        blob.append(0)
+    body = struct.pack("<II", len(js), 0x4E4F534A) + js + struct.pack("<II", len(blob), 0x004E4942) + bytes(blob)
     return struct.pack("<4sII", b"glTF", 2, 12 + len(body)) + body
 
 
@@ -372,6 +438,7 @@ def recovered(tmp_path: Path) -> Path:
                 "Brake_RR_Spatial",
                 "Hood_Spatial",
                 "Trunk_Spatial",
+                "Strut",
                 "Brake_Lights_On",
                 "Brake_Lights_Off",
                 "RHD",
@@ -383,6 +450,7 @@ def recovered(tmp_path: Path) -> Path:
                 "Tesla_Badge",
             ],
             ["Paint", "Glass", "Interior"],
+            prims={"Static_Exterior": 3},
         )
     )
     for side in ("F", "R"):

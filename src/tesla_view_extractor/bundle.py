@@ -1,4 +1,4 @@
-"""Turn a Tesla app bundle (`.apks` / `.xapk` / `.apk`) or an already extracted / recovered directory into a
+"""Turn a Tesla app bundle (`.apks` / `.apkm` / `.xapk` / `.apk`) or an already extracted / recovered directory into a
 GDRE-recovered Godot project directory.
 
 Detection is content based: the inner APK that contains `assets/godot/project.binary` holds the Godot project
@@ -8,6 +8,7 @@ Detection is content based: the inner APK that contains `assets/godot/project.bi
 from __future__ import annotations
 
 import io
+import json
 import logging
 import re
 import shutil
@@ -38,6 +39,18 @@ def app_version_from_name(p: Path) -> str | None:
     return m.group(1).replace("_", "-") if m else None
 
 
+def _version_from_info(z: zipfile.ZipFile, names: list[str]) -> str | None:
+    """APKMirror `.apkm` bundles carry an `info.json` with `release_version` ("4.60.5-4573")."""
+    if "info.json" not in names:
+        return None
+    try:
+        info = json.loads(z.read("info.json").decode("utf-8"))
+    except (ValueError, UnicodeDecodeError):
+        return None
+    v = info.get("release_version") or info.get("versionname")
+    return str(v).replace("_", "-") if v else None
+
+
 def detect(source: Path) -> BundleInfo:
     source = Path(source)
     if source.is_dir():
@@ -49,13 +62,14 @@ def detect(source: Path) -> BundleInfo:
             return BundleInfo(source / GODOT_PREFIX.rstrip("/"), "godot_root", None)
         raise BundleError(f"{source} is neither a recovered project nor an extracted Godot root")
     if not zipfile.is_zipfile(source):
-        raise BundleError(f"{source} is not a zip-based bundle (.apks/.xapk/.apk)")
+        raise BundleError(f"{source} is not a zip-based bundle (.apks/.apkm/.xapk/.apk)")
     with zipfile.ZipFile(source) as z:
         names = z.namelist()
+        version = app_version_from_name(source) or _version_from_info(z, names)
     if MARKER in names:
-        return BundleInfo(source, "apk", app_version_from_name(source))
+        return BundleInfo(source, "apk", version)
     if any(n.lower().endswith(".apk") for n in names):
-        return BundleInfo(source, "bundle", app_version_from_name(source))
+        return BundleInfo(source, "bundle", version)
     raise BundleError(f"{source}: no Godot project (assets/godot/project.binary) and no inner .apk files found")
 
 
@@ -94,7 +108,7 @@ def extract_godot_root(source: Path, work: Path) -> Path:
                 if not name.lower().endswith(".apk"):
                     continue
                 with outer.open(name) as fh:
-                    data = fh.read()  # inner APKs are stored uncompressed in .apks; ~460 MB for the asset pack
+                    data = fh.read()  # ~460 MB for the asset pack (stored in .apks, deflated in .apkm)
                 try:
                     inner = zipfile.ZipFile(io.BytesIO(data))
                 except zipfile.BadZipFile:

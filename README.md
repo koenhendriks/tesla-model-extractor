@@ -13,7 +13,7 @@ renderer-agnostic format and zips it into an asset pack you upload in Home Assis
 
 ## Quick start
 
-1. Get the Android bundle of the Tesla app (`Tesla_<version>.apks` / `.xapk` / `.apk`) from a device you own, e.g.
+1. Get the Android bundle of the Tesla app (`Tesla_<version>.apks` / `.apkm` / `.xapk` / `.apk`) from a device you own, e.g.
    with an APK exporter app or `adb`. Version 4.60 or newer contains the models the card supports today.
 2. Run the extractor (pick one):
 
@@ -21,6 +21,7 @@ renderer-agnostic format and zips it into an asset pack you upload in Home Assis
    ```bash
    docker run --rm -v "$PWD":/work ghcr.io/koenhendriks/tesla-view-extractor /work/Tesla_4.60.0.apks --models bayberry -o /work/packs
    ```
+   Add `-it` (`docker run --rm -it …`) for the interactive vehicle picker and a table that uses your full terminal width.
 
    **Python** (3.11+; GDRE Tools is downloaded once, checksum-verified, into `~/.cache/tesla-view-extractor/`):
    ```bash
@@ -56,6 +57,20 @@ The card currently renders GLB-based vehicles fully (the Model Y family, Model 3
 vehicles are produced on a best-effort basis: unknown scenes get generic rules, and features the card cannot map yet
 are listed under `warnings` in the manifest.
 
+## Unreal Engine export
+
+The same recovery can produce **self-contained GLB files** for Unreal Engine (or any glTF importer): real PBR
+materials with repacked textures, the closure animations attached to the pivot nodes, the default wheels and brakes
+in the arches, hotspot markers, and an `unreal.json` sidecar with the light groups / hidden parts / paint table.
+
+```bash
+tesla-view-extract unreal Tesla_4.60.5.apkm --all -o unreal/            # one folder per vehicle
+tesla-view-extract unreal Tesla_4.60.5.apkm --models bayberry --paint Quicksilver --variant performance
+tesla-view-extract unreal tesla-view-pack-bayberry-4.60.0.zip            # from an asset pack you already built
+```
+
+Import steps, the material mapping and the sidecar format are in [docs/unreal-export.md](docs/unreal-export.md).
+
 ## Usage
 
 ```
@@ -65,6 +80,9 @@ tesla-view-extract <bundle|recovered-dir> [-o OUT] [--models ID[,ID]] [--all] [-
 tesla-view-extract list     <bundle|recovered-dir>        # vehicles, wheels, paints in the bundle
 tesla-view-extract inspect  <bundle|recovered-dir> <id>   # bindings / animation players / markers of one scene
 tesla-view-extract validate <pack.zip|dir>                # schema, referenced files, node names, size
+tesla-view-extract unreal   <bundle|recovered-dir|pack.zip> [-o DIR] [--models ID[,ID]] [--all] [--paint NAME]
+                            [--variant V[,V]] [--wheels default|NAME|none] [--brakes default|SET|none]
+                            [--separate-wheels] [--cables] [--keep-all] [--yaw DEG]   # GLBs for Unreal Engine
 ```
 
 | option | meaning |

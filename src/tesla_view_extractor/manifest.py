@@ -114,6 +114,16 @@ class PackBuilder:
         self.add_overrides_refs(res.overrides)
         if res.facts.root_instance and res.facts.root_instance.lower().endswith(".glb"):
             self.add_file(res.facts.root_instance)
+        for n in res.overrides["nodes"].values():  # child scenes instanced by the vehicle (Cybertruck tonneau …)
+            inst = n.get("instance")
+            if (
+                isinstance(inst, str)
+                and inst.lower().endswith(".tscn")
+                and inst.startswith("Ego/")
+                and overrides_path(inst) not in self.out.files
+                and self.root.exists(inst)
+            ):
+                self.emit_scene(inst)
         return res
 
     # ---------- vehicles ----------

@@ -18,6 +18,9 @@ from .legacy import compare_legacy
 from .manifest import PackBuilder, summarize_model
 from .pack import write_dir, write_zip
 from .report import console, print_warnings, vehicle_table
+from .unreal.export import export_pack
+from .unreal.packsource import is_pack, load_pack
+from .unreal.scene import DEFAULT_VARIANTS, ExportOptions
 from .validate import DEFAULT_MAX_MIB, validate_pack
 
 EXIT_OK, EXIT_ERROR, EXIT_SELECT, EXIT_INVALID = 0, 1, 2, 3
@@ -26,7 +29,7 @@ EXIT_OK, EXIT_ERROR, EXIT_SELECT, EXIT_INVALID = 0, 1, 2, 3
 def _parser() -> argparse.ArgumentParser:
     p = argparse.ArgumentParser(
         prog="tesla-view-extract",
-        description="Build Tesla View asset packs from a Tesla app bundle you own (.apks/.xapk/.apk) or a GDRE-recovered project directory.",
+        description="Build Tesla View asset packs from a Tesla app bundle you own (.apks/.apkm/.xapk/.apk) or a GDRE-recovered project directory.",
         epilog="Never downloads the Tesla app. Downloads only the pinned, checksum-verified GDRE Tools release when no local copy is found.",
     )
     p.add_argument("--version", action="version", version=f"%(prog)s {__version__} (GDRE Tools {GDRE_VERSION})")
@@ -35,7 +38,8 @@ def _parser() -> argparse.ArgumentParser:
 
     def common(sp: argparse.ArgumentParser) -> None:
         sp.add_argument(
-            "source", help="Tesla_x.y.z.apks / .xapk / .apk, an extracted assets/godot dir, or a recovered project dir"
+            "source",
+            help="Tesla_x.y.z.apks / .apkm / .xapk / .apk, an extracted assets/godot dir, or a recovered project dir",
         )
         sp.add_argument(
             "--recovered", metavar="DIR", help="use this GDRE-recovered project directory (skips unpack + recovery)"
@@ -89,6 +93,42 @@ def _parser() -> argparse.ArgumentParser:
     )
     common(ins)
     ins.add_argument("vehicle", help="vehicle id or codename")
+
+    un = sub.add_parser(
+        "unreal",
+        help="export self-contained GLB files (materials, wheels, brakes, closure animations) for Unreal Engine",
+    )
+    common(un)
+    un.add_argument("-o", "--output", metavar="DIR", default="unreal", help="output directory (default: ./unreal/)")
+    un.add_argument("--models", metavar="ID[,ID…]", help="vehicle ids / codenames / aliases (see `list`)")
+    un.add_argument("--all", action="store_true", help="every vehicle in the bundle")
+    un.add_argument(
+        "--wheels",
+        metavar="default|NAME|none",
+        default="default",
+        help="wheel attached under the pivots: the model's default (default), an API wheel name, or none",
+    )
+    un.add_argument(
+        "--brakes", metavar="default|SET|none", default="default", help="brake set (standard / performance …)"
+    )
+    un.add_argument(
+        "--paint", metavar="NAME", help="paint from the app's table (see `list`); default: the app's fallback"
+    )
+    un.add_argument(
+        "--variant",
+        metavar="V[,V…]",
+        default=",".join(sorted(DEFAULT_VARIANTS)),
+        help="looks to bake in: performance, rhd, plate_eu, plate_us, seats_7 (default: plate_eu)",
+    )
+    un.add_argument("--keep-all", action="store_true", help="keep every part (variants are only flagged, not removed)")
+    un.add_argument("--yaw", type=float, default=0.0, metavar="DEG", help="extra rotation about the up axis")
+    un.add_argument(
+        "--separate-wheels", action="store_true", help="also write every wheel of the family as its own GLB"
+    )
+    un.add_argument("--cables", action="store_true", help="also write the charge cables as GLBs")
+    un.add_argument("--keep-normal-y", action="store_true", help="do not flip the green channel of normal maps")
+    un.add_argument("--yes", "-y", action="store_true", help="no interactive selection; default to the first Model Y")
+    un.add_argument("--json", action="store_true", help="print a machine-readable summary to stdout")
 
     va = sub.add_parser("validate", help="validate a pack zip or directory")
     va.add_argument("pack")
@@ -309,6 +349,81 @@ def cmd_inspect(args: argparse.Namespace) -> int:
     return EXIT_OK
 
 
+def cmd_unreal(args: argparse.Namespace) -> int:
+    src = Path(args.source)
+    if is_pack(src):
+        res = load_pack(src)
+        app_version = res.manifest.get("app_version")
+        ids = list(res.manifest.get("models", {}))
+        if args.models:
+            wanted = [k.strip().lower() for k in args.models.split(",")]
+            ids = [
+                i
+                for i in ids
+                if i in wanted
+                or str(res.manifest["models"][i].get("codename", "")).lower() in wanted
+                or any(a.lower() in wanted for a in res.manifest["models"][i].get("aliases", []))
+            ]
+            if len(ids) != len(wanted):
+                console.print(f"[red]pack contains {sorted(res.manifest.get('models', {}))}, not all of {wanted}[/]")
+                return EXIT_ERROR
+    else:
+        root, app_version = _root(args)
+        cat = build_catalog(root, Path(args.rules) if args.rules else None)
+        print_warnings(cat.warnings, "catalog warnings")
+        vehicles = _select(cat, args)
+        wheel_filter: list[str] | None = None
+        if args.wheels not in ("default", "none"):
+            wheel_filter = [w.strip() for w in args.wheels.split(",")]
+            wheel_filter += [w.api_name for w in cat.wheels if w.present]  # keep the families for --separate-wheels
+        res = PackBuilder(cat).build(vehicles, wheel_filter)
+        res.manifest["app_version"] = app_version
+        print_warnings(res.warnings, "pack warnings")
+        ids = [v.id for v in vehicles]
+    opt = ExportOptions(
+        variants=frozenset(v.strip() for v in args.variant.split(",") if v.strip()),
+        keep_all=args.keep_all,
+        wheel=None if args.wheels == "none" else args.wheels.split(",")[0],
+        brakes=None if args.brakes == "none" else args.brakes,
+        paint=args.paint,
+        yaw_deg=args.yaw,
+        flip_normal_green=not args.keep_normal_y,
+    )
+    outputs = export_pack(res, ids, opt, Path(args.output), args.separate_wheels, args.cables)
+    for o in outputs:
+        console.print(
+            f"[green]wrote[/] {o.glb}  ({o.glb_bytes / 1048576:.1f} MiB, {o.animations} animations"
+            + (f", {len(o.wheels)} wheel GLBs" if o.wheels else "")
+            + (f", {len(o.cables)} cables" if o.cables else "")
+            + ")"
+        )
+        print_warnings(o.warnings, f"{o.model} warnings")
+    if args.json:
+        print(
+            json.dumps(
+                {
+                    "app_version": app_version,
+                    "vehicles": [
+                        {
+                            "model": o.model,
+                            "folder": str(o.folder),
+                            "glb": str(o.glb),
+                            "glb_bytes": o.glb_bytes,
+                            "animations": o.animations,
+                            "wheels": o.wheels,
+                            "cables": o.cables,
+                            "warnings": o.warnings,
+                        }
+                        for o in outputs
+                    ],
+                },
+                indent=1,
+            )
+        )
+    console.print("[green]done.[/] Import guide: docs/unreal-export.md (each folder has an unreal.json sidecar)")
+    return EXIT_OK
+
+
 def cmd_validate(args: argparse.Namespace) -> int:
     rep = validate_pack(Path(args.pack), args.max_size)
     console.print(
@@ -346,6 +461,7 @@ def main(argv: list[str] | None = None) -> int:
         "extract",
         "list",
         "inspect",
+        "unreal",
         "validate",
         "compare-legacy",
         "-h",
@@ -366,6 +482,7 @@ def main(argv: list[str] | None = None) -> int:
         "extract": cmd_extract,
         "list": cmd_list,
         "inspect": cmd_inspect,
+        "unreal": cmd_unreal,
         "validate": cmd_validate,
         "compare-legacy": cmd_compare,
     }[args.cmd](args)

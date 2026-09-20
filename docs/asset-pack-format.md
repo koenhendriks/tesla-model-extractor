@@ -150,6 +150,9 @@ Produced for every `.tscn` (vehicles, wheels, brakes, cables):
 ```jsonc
 {
   "source": "Ego/Bayberry/Bayberry.tscn",
+  "root": { "name": "ROOT", "type": null, "instance": "Ego/Bayberry/Bayberry.glb", "matrix": null | [16 floats] },
+                                          // instance: the GLB / tscn the root inherits from (an imported .fbx/.dae is
+                                          // reported as the .glb GDRE recovered from it); matrix: root transform
   "root_props": { … every property on the scene root, simplified … },
   "nodes": {
     "<node name>": { "parent": "Door_LF_Spatial", "type": "Spatial", "instance": "…tscn", "visible": false,
@@ -175,6 +178,7 @@ Produced for every `.tscn` (vehicles, wheels, brakes, cables):
   "ao_texture": "…", "ao_channel": 2, "ao_on_uv2": false, "ao_light_affect": 1.0,        // when ao_enabled
   "normal_texture": "…", "normal_scale": 1.0,                                            // when normal_enabled
   "emission": [r, g, b], "emission_energy": 1.0, "emission_texture": "…", "emission_on_uv2": true, "emission_operator": 0,
+  "uv1_scale": [10, 10, 1], "uv1_offset": [0, 0, 0],                                 // only when set (also uv2_*)
   "transparent": true, "unshaded": false, "cull_mode": 0, "blend_mode": 0, "depth_draw_mode": 0, "render_priority": 0 }
 
 // ShaderMaterial

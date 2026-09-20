@@ -160,7 +160,7 @@ class SceneConverter:
                 root_blk = b
                 facts.root_name = name
                 facts.root_type = b.type
-                facts.root_instance = gf.ext_rel(b.attrs.get("instance"))
+                facts.root_instance = self._recovered_glb(gf.ext_rel(b.attrs.get("instance")))
                 for k, v in props.items():
                     if k == "__parse_errors__":
                         continue
@@ -249,12 +249,25 @@ class SceneConverter:
         facts.warnings.extend(self.warnings)
         overrides = {
             "source": rel,
+            "root": {
+                "name": facts.root_name,
+                "type": facts.root_type,
+                "instance": facts.root_instance,
+                "matrix": facts.root_transform,
+            },
             "root_props": root_props,
             "nodes": nodes,
             "materials": self.materials,
             "materials_by_name": by_name,
         }
         return SceneResult(overrides, facts, gf)
+
+    def _recovered_glb(self, inst: str | None) -> str | None:
+        """Scenes that instance an imported `.fbx` / `.dae` get the GLB GDRE recovered from the import instead."""
+        if not inst or inst.lower().endswith((".glb", ".tscn")):
+            return inst
+        cand = inst.rsplit(".", 1)[0] + ".glb"
+        return cand if self.root.exists(cand) else inst
 
     def _sibling_materials(self, scene_rel: str) -> list[str]:
         scene_path = self.root.require(scene_rel)

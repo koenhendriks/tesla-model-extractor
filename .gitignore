@@ -1,10 +1,12 @@
 # Tesla app bundles and everything derived from them – never commit
 *.apk
 *.apks
+*.apkm
 *.xapk
 input/
 recovered/
 packs/
+/unreal/
 *.zip
 *.glb
 *.stex
