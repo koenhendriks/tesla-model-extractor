@@ -2,23 +2,34 @@
 
 from __future__ import annotations
 
+import os
+import sys
+
 from rich.console import Console
 from rich.table import Table
 
 from .catalog import Catalog, resolve_default_wheel, resolve_wheel_family
 
-console = Console(stderr=True)
+# Under `docker run` without -t stderr is not a terminal, so rich falls back to
+# 80 columns and squeezes the vehicle table; give it room unless the caller
+# pinned COLUMNS (which rich honours itself).
+_WIDTH = None if sys.stderr.isatty() or os.environ.get("COLUMNS") else 120
+console = Console(stderr=True, width=_WIDTH)
 
 
 def vehicle_table(cat: Catalog) -> Table:
-    t = Table(title="Vehicles in this app bundle", show_lines=False)
-    t.add_column("id", style="bold")
-    t.add_column("name")
-    t.add_column("codename")
-    t.add_column("API model / fascia")
-    t.add_column("wheels")
-    t.add_column("raw MB", justify="right")
-    t.add_column("status")
+    t = Table(title="Vehicles in this app bundle", show_lines=False, pad_edge=False, padding=(0, 1))
+    # ids are copy-pasted into --models, so they must stay intact on a narrow
+    # (80-column, non-tty) console: reserve their full width and let the rest
+    # fold rather than hit rich's default ellipsis truncation.
+    id_width = max((len(v.id) for v in cat.vehicles), default=2)
+    t.add_column("id", style="bold", no_wrap=True, min_width=id_width)
+    t.add_column("name", overflow="fold")
+    t.add_column("codename", overflow="fold")
+    t.add_column("API model / fascia", overflow="fold")
+    t.add_column("wheels", overflow="fold")
+    t.add_column("raw MB", justify="right", no_wrap=True)
+    t.add_column("status", overflow="fold")
     for v in cat.vehicles:
         fam = resolve_wheel_family(cat, v) if v.present else None
         n_wheels = len(cat.wheels_in_family(fam)) if fam else 0
