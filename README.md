@@ -10,6 +10,7 @@ project with [GDRE Tools](https://github.com/GDRETools/gdsdecomp) and converts i
 | output | for | command |
 |---|---|---|
 | **GLB per vehicle** with materials, animations, wheels and brakes baked in, plus a JSON sidecar | Unreal Engine, Blender, Unity, three.js, any glTF importer | `tesla-model-extract unreal` |
+| **COLLADA (.dae) per vehicle** with materials, wheels and brakes baked in, plus textures and a JSON sidecar | Sweet Home 3D, Blender, MeshLab, any Collada importer | `tesla-model-extract dae` |
 | **Asset pack** (zip with GLB + JSON overrides + textures + manifest) | the [Tesla View](https://github.com/koenhendriks/tesla-view) Home Assistant card | `tesla-model-extract extract` (default) |
 
 Not a terminal person? The [desktop app](#desktop-app) does the same in a window on Linux, macOS and Windows:
@@ -157,6 +158,31 @@ Import steps for Unreal Engine 5, the Godot → glTF material mapping, the sidec
 script for Blender are in [docs/unreal-export.md](docs/unreal-export.md). Every file passes the Khronos glTF
 validator and loads in Blender, three.js and `<model-viewer>` as well.
 
+## DAE export (Sweet Home 3D, Blender, MeshLab)
+
+`dae` writes the same assembled vehicle as `unreal` (one baked-in look, wheels, brakes, optional `--exclude`
+filtering) as **COLLADA (.dae) + textures**, for tools with a mature Collada importer. Sweet Home 3D is the
+best-tested target, since it is Collada-native; Blender (4.2.x) and MeshLab also import the files correctly.
+Collada has no animation support in this export, so closures are written in their default, closed pose, and
+Collada-phong materials are an approximation of the app's PBR materials (metallic/roughness, clear-coat and
+occlusion textures have no equivalent and are dropped; see `dae.json` for exactly what was approximated per
+material).
+
+```bash
+tesla-model-extract dae Tesla_4.60.5.apkm --models bayberry --paint Quicksilver -o dae/
+tesla-model-extract dae Tesla_4.60.5.apkm --models poppyseed --exclude "*frost*,*_RHD*" -o dae/
+```
+
+Each vehicle gets its own folder with `<Codename>.dae`, a `textures/` folder and a `dae.json` sidecar (same shape
+as `unreal.json`, plus notes on anything Collada-phong could not represent).
+
+| option | meaning |
+|---|---|
+| `--exclude PATTERN[,PATTERN]` | drop nodes whose name matches one of these glob patterns (case-insensitive), e.g. `*frost*,*_RHD*` |
+
+All other options (`--models`, `--all`, `--paint`, `--variant`, `--wheels`, `--brakes`, `--yaw`, `--keep-all`,
+`--keep-normal-y`, `--paint-brightness`) work the same as for `unreal`.
+
 ## Asset packs for the Tesla View Home Assistant card
 
 `extract` (the default command) builds one zip per vehicle (8–25 MiB; Home Assistant accepts uploads up to 100 MiB)
@@ -186,6 +212,10 @@ tesla-model-extract unreal   <bundle|recovered-dir|pack.zip> [-o DIR] [--models 
                     [--variant V[,V]] [--wheels default|NAME|none] [--brakes default|SET|none]
                     [--separate-wheels] [--cables] [--keep-all] [--yaw DEG] [--keep-normal-y]
                     [--paint-brightness FACTOR]
+tesla-model-extract dae      <bundle|recovered-dir|pack.zip> [-o DIR] [--models ID[,ID]] [--all] [--paint NAME]
+                    [--variant V[,V]] [--wheels default|NAME|none] [--brakes default|SET|none]
+                    [--keep-all] [--yaw DEG] [--keep-normal-y] [--paint-brightness FACTOR]
+                    [--exclude PATTERN[,PATTERN]]
 tesla-model-extract list     <bundle|recovered-dir>        # vehicles, wheels, paints in the bundle
 tesla-model-extract inspect  <bundle|recovered-dir> <id>   # bindings / animation players / markers of one scene
 tesla-model-extract validate <pack.zip|dir>                # asset pack: schema, referenced files, node names, size

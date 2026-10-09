@@ -8,6 +8,7 @@ glTF format cannot carry (light groups, hidden parts, variants, paints, markers)
 
 from __future__ import annotations
 
+import fnmatch
 import json
 import logging
 import re
@@ -41,6 +42,7 @@ class ExportOptions:
     yaw_deg: float = 0.0
     flip_normal_green: bool = True
     paint_brightness: float = DEFAULT_PAINT_BRIGHTNESS  # 1 = the app's raw paint values (see materials.py)
+    exclude: frozenset[str] = frozenset()
 
 
 @dataclass
@@ -281,6 +283,20 @@ class Assembler:
                 self._overridden.add((node["mesh"], pi))
 
     # ---------- vehicle ----------
+    def _apply_excludes(self, root: int) -> list[str]:
+        """Detach every node (and its subtree) whose name matches one of `self.opt.exclude` (fnmatch, case-insensitive)."""
+        if not self.opt.exclude:
+            return []
+        patterns = [p.lower() for p in self.opt.exclude]
+        removed: list[str] = []
+        for idx in self.doc.descendants(root):
+            name = self.doc.nodes[idx].get("name", "")
+            if any(fnmatch.fnmatch(name.lower(), p) for p in patterns):
+                self.doc.detach(idx)
+                self.hidden.discard(idx)
+                removed.append(name)
+        return removed
+
     def export_vehicle(self, model_id: str) -> ExportResult:
         model = self.manifest["models"][model_id]
         codename = model.get("codename") or model_id
@@ -296,6 +312,7 @@ class Assembler:
         wheel = self._wheels(model, root)
         brakes = self._brakes(model, root)
         anims = self._animations(model, root)
+        excluded = self._apply_excludes(root)
         for idx in self.hidden:
             self.doc.nodes[idx].setdefault("extras", {})["visible"] = False
         markers = self._markers(model, root)
@@ -321,6 +338,7 @@ class Assembler:
             "variants_applied": sorted(self.opt.variants),
             "variants_available": sorted(k for k, v in (model.get("variants") or {}).items() if v),
             "removed_nodes": sorted(removed),
+            "excluded_nodes": sorted(excluded),
             "hidden_nodes": hidden_names,
             "lights": model.get("lights"),
             "lights_eu": model.get("lights_eu"),

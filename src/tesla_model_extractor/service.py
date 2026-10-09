@@ -23,7 +23,7 @@ from .gdre import Gdre, GdreError, Progress
 from .godot.resolve import ResourceRoot
 from .manifest import BuildResult, PackBuilder, summarize_model
 from .pack import MIB, PackStats, write_dir, write_zip
-from .unreal.export import VehicleOutput, export_pack
+from .unreal.export import VehicleOutput, export_dae_pack, export_pack
 from .unreal.packsource import is_pack, load_pack
 from .unreal.scene import ExportOptions
 from .validate import DEFAULT_MAX_MIB, Report, validate_pack
@@ -553,5 +553,21 @@ def export_glb(
     res, model_ids = glb_source(session, ids, wheels)
     _say(notify, "info", f"exporting {', '.join(model_ids)} …")
     outputs = export_pack(res, model_ids, opt, output, separate_wheels, cables)
+    warnings = [] if session.is_pack else res.warnings
+    return GlbExport(outputs, session.app_version, warnings)
+
+
+def export_dae(
+    session: Session,
+    ids: list[str] | None,
+    opt: ExportOptions,
+    output: Path,
+    *,
+    wheels: str = "default",
+    notify: Notify | None = None,
+) -> GlbExport:
+    res, model_ids = glb_source(session, ids, wheels)
+    _say(notify, "info", f"exporting DAE for {', '.join(model_ids)} …")
+    outputs = export_dae_pack(res, model_ids, opt, output)
     warnings = [] if session.is_pack else res.warnings
     return GlbExport(outputs, session.app_version, warnings)

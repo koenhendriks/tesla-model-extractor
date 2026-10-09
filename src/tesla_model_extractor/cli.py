@@ -16,6 +16,7 @@ from .service import (
     ExtractError,
     Session,
     build_pack,
+    export_dae,
     export_glb,
     open_source,
     pack_targets,
@@ -23,6 +24,7 @@ from .service import (
     wheel_filter_for_extract,
     wheel_option,
 )
+from .unreal.daewriter import summarize_dae_warnings
 from .unreal.materials import DEFAULT_PAINT_BRIGHTNESS
 from .unreal.scene import DEFAULT_VARIANTS, ExportOptions
 from .validate import DEFAULT_MAX_MIB, validate_pack
@@ -150,6 +152,27 @@ def _parser() -> argparse.ArgumentParser:
     )
     un.add_argument("--yes", "-y", action="store_true", help="no interactive selection; default to the first Model Y")
     un.add_argument("--json", action="store_true", help="print a machine-readable summary to stdout")
+
+    da = sub.add_parser(
+        "dae",
+        help="export COLLADA (.dae) + textures (same options as `obj`, better material fidelity for Sweet Home 3D)",
+    )
+    common(da)
+    da.add_argument("-o", "--output", metavar="DIR", default="dae", help="output directory (default: ./dae/)")
+    da.add_argument("--models", metavar="ID[,ID…]")
+    da.add_argument("--all", action="store_true")
+    da.add_argument("--wheels", metavar="default|NAME|none", default="default")
+    da.add_argument("--brakes", metavar="default|SET|none", default="default")
+    da.add_argument("--paint", metavar="NAME")
+    da.add_argument("--variant", metavar="V[,V…]", default=",".join(sorted(DEFAULT_VARIANTS)))
+    da.add_argument("--keep-all", action="store_true")
+    da.add_argument("--yaw", type=float, default=0.0, metavar="DEG")
+    da.add_argument("--keep-normal-y", action="store_true")
+    da.add_argument("--paint-brightness", type=float, default=DEFAULT_PAINT_BRIGHTNESS, metavar="FACTOR")
+    da.add_argument("--exclude", metavar="PATTERN[,PATTERN…]", default="")
+    da.add_argument("--yes", "-y", action="store_true")
+    da.add_argument("--json", action="store_true")
+    da.add_argument("--quiet-warnings", action="store_true")
 
     va = sub.add_parser("validate", help="validate a pack zip or directory")
     va.add_argument("pack")
@@ -367,6 +390,7 @@ def export_options(args: argparse.Namespace) -> ExportOptions:
         yaw_deg=args.yaw,
         flip_normal_green=not args.keep_normal_y,
         paint_brightness=args.paint_brightness,
+        exclude=frozenset(p.strip() for p in getattr(args, "exclude", "").split(",") if p.strip()),
     )
 
 
@@ -404,6 +428,31 @@ def cmd_unreal(args: argparse.Namespace) -> int:
     if args.json:
         print(json.dumps(result.summary(), indent=1))
     console.print("[green]done.[/] Import guide: docs/unreal-export.md (each folder has an unreal.json sidecar)")
+    return EXIT_OK
+
+
+def cmd_dae(args: argparse.Namespace) -> int:
+    session = _session(args, accept_pack=True)
+    if session.is_pack:
+        ids = args.models.split(",") if args.models else None
+    else:
+        assert session.catalog is not None
+        print_warnings(session.catalog.warnings, "catalog warnings")
+        ids = [v.id for v in _select(session.catalog, args)]
+    try:
+        result = export_dae(session, ids, export_options(args), Path(args.output), wheels=args.wheels)
+    except ExtractError as e:
+        console.print(f"[red]{e}[/]")
+        return EXIT_ERROR
+    pack_warnings = summarize_dae_warnings(result.warnings) if args.quiet_warnings else result.warnings
+    print_warnings(pack_warnings, "pack warnings")
+    for o in result.outputs:
+        console.print(f"[green]wrote[/] {o.glb}  ({o.glb_bytes / 1024:.1f} KiB)")
+        vehicle_warnings = summarize_dae_warnings(o.warnings) if args.quiet_warnings else o.warnings
+        print_warnings(vehicle_warnings, f"{o.model} warnings")
+    if args.json:
+        print(json.dumps(result.summary(), indent=1))
+    console.print("[green]done.[/] Each folder has <Codename>.dae + textures/ + dae.json (notes/warnings)")
     return EXIT_OK
 
 
@@ -445,6 +494,7 @@ def main(argv: list[str] | None = None) -> int:
         "list",
         "inspect",
         "unreal",
+        "dae",
         "validate",
         "compare-legacy",
         "gui",
@@ -471,6 +521,7 @@ def main(argv: list[str] | None = None) -> int:
         "list": cmd_list,
         "inspect": cmd_inspect,
         "unreal": cmd_unreal,
+        "dae": cmd_dae,
         "validate": cmd_validate,
         "compare-legacy": cmd_compare,
     }[args.cmd](args)

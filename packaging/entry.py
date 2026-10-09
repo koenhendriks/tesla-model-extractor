@@ -9,7 +9,7 @@ from __future__ import annotations
 import os
 import sys
 
-CLI_COMMANDS = {"extract", "list", "inspect", "unreal", "validate", "compare-legacy"}
+CLI_COMMANDS = {"extract", "list", "inspect", "unreal", "dae", "validate", "compare-legacy"}
 
 
 def _ensure_streams() -> None:

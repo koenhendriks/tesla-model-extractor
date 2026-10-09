@@ -8,6 +8,8 @@ from pathlib import Path
 from typing import Any
 
 from ..manifest import BuildResult
+from .daewriter import export_dae
+from .gltf import Document
 from .scene import Assembler, ExportOptions
 
 
@@ -75,4 +77,44 @@ def export_pack(
         (folder / "unreal.json").write_bytes(_json_bytes(res.sidecar))
         asm.warnings = []
         out.append(vo)
+    return out
+
+
+def export_dae_pack(
+    result: BuildResult,
+    model_ids: list[str],
+    opt: ExportOptions,
+    out_dir: Path,
+) -> list[VehicleOutput]:
+    """Like export_obj_pack, but writes Collada (.dae) + textures instead of OBJ/MTL."""
+    out: list[VehicleOutput] = []
+    asm = Assembler(result, opt)
+    for model_id in model_ids:
+        model = result.manifest["models"][model_id]
+        res = asm.export_vehicle(model_id)
+        folder = out_dir / model_id
+        folder.mkdir(parents=True, exist_ok=True)
+        codename = model.get("codename") or model_id
+        doc = Document.from_glb(res.glb)
+        daeres = export_dae(doc, None, codename)
+        (folder / f"{codename}.dae").write_bytes(daeres.dae)
+        if daeres.textures:
+            tex_dir = folder / "textures"
+            tex_dir.mkdir(exist_ok=True)
+            for fname, data in daeres.textures.items():
+                (tex_dir / fname).write_bytes(data)
+        warnings = list(res.warnings) + daeres.warnings
+        res.sidecar["warnings"] = list(dict.fromkeys(res.sidecar.get("warnings", []) + daeres.warnings))
+        (folder / "dae.json").write_bytes(_json_bytes(res.sidecar))
+        out.append(
+            VehicleOutput(
+                model_id,
+                folder,
+                folder / f"{codename}.dae",
+                (folder / f"{codename}.dae").stat().st_size,
+                0,
+                warnings=warnings,
+            )
+        )
+        asm.warnings = []
     return out
